@@ -52,7 +52,7 @@ public class BankService {
         Customer c = new Customer(name, email, phone, address);
         AnnotationValidator.validate(c);
         store.addCustomer(c);
-        System.out.println("Created: " + c);
+        // Caller (MiniBank) prints the success banner with the generated ID
         return c;
     }
 
@@ -64,14 +64,33 @@ public class BankService {
         return List.copyOf(store.allCustomers());
     }
 
+    /** True when at least one customer has been registered. */
+    public boolean hasCustomers() {
+        return !store.allCustomers().isEmpty();
+    }
+
+    /** Total number of registered customers. */
+    public int customerCount() {
+        return store.allCustomers().size();
+    }
+
+    /** True when at least one account exists. */
+    public boolean hasAccounts() {
+        return !store.allAccounts().isEmpty();
+    }
+
+    /** Total number of accounts. */
+    public int accountCount() {
+        return store.allAccounts().size();
+    }
+
     // ── Account operations ────────────────────────────────────────────────────
     public SavingsAccount createSavingsAccount(int customerId, double initialBalance)
             throws AccountNotFoundException, ValidationException {
-        store.getCustomer(customerId); // verify customer exists
+        store.getCustomer(customerId); // verify customer exists – throws if absent
         SavingsAccount acc = new SavingsAccount(customerId, initialBalance);
         store.addAccount(acc);
-        System.out.println("Created: " + acc);
-        return acc;
+        return acc;   // caller prints the success banner
     }
 
     public CurrentAccount createCurrentAccount(int customerId, double initialBalance)
@@ -79,7 +98,6 @@ public class BankService {
         store.getCustomer(customerId);
         CurrentAccount acc = new CurrentAccount(customerId, initialBalance);
         store.addAccount(acc);
-        System.out.println("Created: " + acc);
         return acc;
     }
 
@@ -89,7 +107,6 @@ public class BankService {
         store.getCustomer(customerId);
         FixedDepositAccount acc = new FixedDepositAccount(customerId, amount, months);
         store.addAccount(acc);
-        System.out.println("Created: " + acc);
         return acc;
     }
 
@@ -153,8 +170,18 @@ public class BankService {
     // ── Listing ───────────────────────────────────────────────────────────────
     public void listAllAccounts() {
         List<Account> list = store.allAccountsSortedById();
-        if (list.isEmpty()) { System.out.println("No accounts found."); return; }
-        list.forEach(System.out::println);
+        if (list.isEmpty()) {
+            System.out.println("No accounts available yet.");
+            System.out.println("Please create a customer first, then create a bank account.");
+            return;
+        }
+        System.out.printf("%-6s  %-14s  %-13s  %12s  %s%n",
+                "Acc-ID", "Account No", "Type", "Balance (₹)", "Cust-ID");
+        System.out.println("-".repeat(65));
+        list.forEach(a -> System.out.printf("%-6d  %-14s  %-13s  %12.2f  %d%n",
+                a.getAccountId(), a.getAccountNumber(),
+                a.getAccountType(), a.getBalance(), a.getCustomerId()));
+        System.out.printf("%nTotal: %d account(s)%n", list.size());
     }
 
     public boolean deleteAccount(int accountId) throws AccountNotFoundException {
