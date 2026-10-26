@@ -1,0 +1,2 @@
+Main-Class: MiniBank
+Class-Path: .
