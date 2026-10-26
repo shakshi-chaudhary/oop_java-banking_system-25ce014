@@ -1,6 +1,8 @@
 out/
+target/
 *.class
 *.jar
+!.mvn/wrapper/maven-wrapper.jar
 accounts.dat
 transactions.log
 *.ser
