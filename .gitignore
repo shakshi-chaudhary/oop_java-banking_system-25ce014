@@ -1,9 +1,26 @@
+# Build Outputs
 out/
 target/
 *.class
 *.jar
 !.mvn/wrapper/maven-wrapper.jar
+
+# Local Persistence & Data Files
+*.db
+*.sqlite
+*.sqlite3
+minibank.db
 accounts.dat
-transactions.log
 *.ser
+
+# Application Logs & Reports
+transactions.log
+*.log
 report.txt
+*.csv
+
+# OS & IDE Metadata
+.DS_Store
+.idea/
+*.iml
+.vscode/

@@ -2,10 +2,13 @@
 // Lab 6 – implements InterestBearing; withdraw locked until maturity
 package model;
 
+import exception.AccountLockedException;
 import exception.InsufficientFundsException;
 import exception.InvalidAmountException;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 
 /**
@@ -34,6 +37,15 @@ public class FixedDepositAccount extends Account implements InterestBearing, Ser
         this.maturityDate = LocalDate.now().plusMonths(tenureMonths);
     }
 
+    /** Database restoration constructor. */
+    public FixedDepositAccount(int accountId, int customerId, String accountNumber,
+                               double balance, boolean isLocked, double dailyLimit,
+                               double interestRate, LocalDate maturityDate) {
+        super(accountId, customerId, accountNumber, balance, isLocked, dailyLimit);
+        this.interestRate = interestRate > 0 ? interestRate : DEFAULT_INTEREST_RATE;
+        this.maturityDate = maturityDate != null ? maturityDate : LocalDate.now().plusMonths(12);
+    }
+
     @Override
     public String getAccountType() { return "FixedDeposit"; }
 
@@ -53,10 +65,12 @@ public class FixedDepositAccount extends Account implements InterestBearing, Ser
 
     @Override
     public void applyInterest() {
-        double interest = getBalance() * interestRate;
+        BigDecimal bal = BigDecimal.valueOf(getBalance());
+        BigDecimal rate = BigDecimal.valueOf(interestRate);
+        double interest = bal.multiply(rate).setScale(2, RoundingMode.HALF_UP).doubleValue();
         try {
             deposit(interest);
-        } catch (InvalidAmountException e) {
+        } catch (InvalidAmountException | AccountLockedException e) {
             throw new IllegalStateException(e);
         }
         System.out.printf("FD Interest applied: %.2f. New balance: %.2f%n",

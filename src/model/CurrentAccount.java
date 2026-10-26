@@ -29,6 +29,13 @@ public class CurrentAccount extends Account implements Premium, Serializable {
         this.overdraftLimit = overdraftLimit;
     }
 
+    /** Database restoration constructor. */
+    public CurrentAccount(int accountId, int customerId, String accountNumber,
+                          double balance, boolean isLocked, double dailyLimit, double overdraftLimit) {
+        super(accountId, customerId, accountNumber, balance, isLocked, dailyLimit);
+        this.overdraftLimit = overdraftLimit >= 0 ? overdraftLimit : DEFAULT_OVERDRAFT_LIMIT;
+    }
+
     @Override
     public String getAccountType() { return "Current"; }
 

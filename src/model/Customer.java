@@ -35,8 +35,25 @@ public class Customer implements Serializable, Cloneable {
         this.address    = address;
     }
 
+    /** Database restoration constructor. */
+    public Customer(int customerId, String name, String email, String phone, Address address) {
+        this.customerId = customerId;
+        this.name       = name;
+        this.email      = email;
+        this.phone      = phone;
+        this.address    = address;
+        updateIdCounter(customerId);
+    }
+
+    /** Updates id counter so newly generated IDs never collide with loaded IDs. */
+    public static synchronized void updateIdCounter(int id) {
+        if (id > idCounter) {
+            idCounter = id;
+        }
+    }
+
     /** Returns the next customer ID without incrementing (for display). */
-    public static int peekNextId() { return idCounter + 1; }
+    public static synchronized int peekNextId() { return idCounter + 1; }
 
     // ── Getters & Setters ────────────────────────────────────────────────────
     public int     getCustomerId() { return customerId; }

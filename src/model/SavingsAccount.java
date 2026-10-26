@@ -2,10 +2,13 @@
 // Lab 6 – implements InterestBearing
 package model;
 
+import exception.AccountLockedException;
 import exception.InsufficientFundsException;
 import exception.InvalidAmountException;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * Savings account: minimum balance enforced on withdraw; earns interest.
@@ -30,6 +33,13 @@ public class SavingsAccount extends Account implements InterestBearing, Serializ
         this.interestRate = interestRate;
     }
 
+    /** Database restoration constructor. */
+    public SavingsAccount(int accountId, int customerId, String accountNumber,
+                          double balance, boolean isLocked, double dailyLimit, double interestRate) {
+        super(accountId, customerId, accountNumber, balance, isLocked, dailyLimit);
+        this.interestRate = interestRate > 0 ? interestRate : DEFAULT_INTEREST_RATE;
+    }
+
     @Override
     public String getAccountType() { return "Savings"; }
 
@@ -51,11 +61,13 @@ public class SavingsAccount extends Account implements InterestBearing, Serializ
 
     @Override
     public void applyInterest() {
-        double interest = getBalance() * interestRate;
+        BigDecimal bal = BigDecimal.valueOf(getBalance());
+        BigDecimal rate = BigDecimal.valueOf(interestRate);
+        double interest = bal.multiply(rate).setScale(2, RoundingMode.HALF_UP).doubleValue();
         try {
             deposit(interest);
-        } catch (InvalidAmountException e) {
-            // interest is always positive – should never happen
+        } catch (InvalidAmountException | AccountLockedException e) {
+            // interest is always positive and should not fail
             throw new IllegalStateException(e);
         }
         System.out.printf("Interest applied: %.2f. New balance: %.2f%n",
